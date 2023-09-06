@@ -1,0 +1,69 @@
+# In this project, I have cleaned the data to solve some important questions and made a visualized chart to know the trend of the data.
+## I have downloaded the data source from this link https://data.world/aroissues/forbes-global-2000-2008-2019
+library(dplyr)
+library(readxl)
+library(tidyverse)
+
+df <- read_excel("ForbesGlobal2000-2022.xlsx")
+view(df)
+## Check that this data set does not have na variable.
+is.na(df)
+head(is.na(df)) #is.na(df) has many outputs, so I will show only a few of them.
+mean(is.na(df))
+### 0 mean do not have na value
+## Which country has the most Forbes companies?
+df_country <- df %>%
+  group_by(Country) %>%
+  summarise(n=n()) %>%
+  arrange(desc(n))
+df_country$Country[1]
+### The United States has the most Forbe companies.
+
+## Which five countries have the most market value?
+df_country_market <- df %>%
+  select(Country, Market_Value) %>%
+  group_by(Country) %>%
+  summarize(total_market_value = sum(Market_Value)) %>%
+  arrange(desc(total_market_value))
+head(df_country_market, 5)
+
+## Which industry has the most companies?
+df_industry <- df %>%
+  group_by(Industry) %>%
+  summarize(total_num = sum(n= n()))
+df_industry[1,1]
+## Plot the histogram of prices
+ggplot(df, aes(Profits)) +
+  geom_histogram(bins = 30, fill ="orange")+
+  theme_minimal()+
+  labs(title = " Price Histogram",
+       )
+### The distribution of prices is right-skewed.
+
+## Plot the sales correlation with profits.
+ggplot(df, aes(x= Sales, y = Profits, col = Profits)) +
+  geom_point(size = 2, alpha= 0.8) +
+  scale_color_gradient(low = "gold", high = "purple") +
+  labs(title = "Sales correlation with profit") +
+  theme_minimal() +
+  geom_smooth(method = "lm",
+              col = "black")
+### When sales increase, profits also increase.
+
+
+## Which industry has the best profits?
+industry_group <- df %>%
+  select(Industry, Profits) %>%
+  group_by(Industry) %>%
+  summarize(total_pro_indus = sum(Profits)) %>%
+  arrange(desc(total_pro_indus))
+industry_group[1,1]
+### The best industry with the most profit is banking, so I will check the answer with a bar chart.
+## Plot the industry correlation with profits.
+ggplot(df, aes(x = Industry, y = Profits, fill = Industry == industry_group$Industry[1])) +
+  geom_col() +
+  scale_fill_manual(values = c("TRUE" = "blue", "FALSE" = "#6EF036"),
+                    name = "Is the best profits") +
+  theme_minimal() +
+  labs(title = "Industry correlation with profit") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
